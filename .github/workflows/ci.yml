@@ -8,7 +8,7 @@ on:
   pull_request:
     branches:
       - develop
-      - main  # เพิ่ม main เพื่อให้ครอบคลุม PR เข้า main
+      - main
 
 jobs:
   lint-and-test:
@@ -34,11 +34,16 @@ jobs:
       - name: Run tests and generate coverage with Kover
         run: ./gradlew test koverReport
 
+      - name: Check Kover Report (Debugging)
+        run: ls -la app/build/reports/kover/ || echo "Kover report directory not found"
+
       - name: Upload Kover Report
+        if: success()  # รันเฉพาะเมื่อขั้นตอนก่อนหน้าสำเร็จ
         uses: actions/upload-artifact@v3
         with:
           name: kover-report
           path: app/build/reports/kover/
+          if-no-files-found: warn  # แค่เตือนถ้าไม่มีไฟล์ ไม่ fail
 
   ai-code-review:
     needs: lint-and-test
@@ -61,7 +66,7 @@ jobs:
 
   build-and-deploy:
     needs: ai-code-review
-    if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || github.event_name == 'push'
+    if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.base_ref == 'refs/heads/main') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -79,7 +84,7 @@ jobs:
         run: ./gradlew assembleDebug
 
       - name: List APK files (Debugging)
-        run: ls -la app/build/outputs/apk/debug/
+        run: ls -la app/build/outputs/apk/debug/ || echo "APK not found"
 
       - name: Upload APK to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
