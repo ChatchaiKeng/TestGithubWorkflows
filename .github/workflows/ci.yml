@@ -62,7 +62,7 @@ jobs:
           perl -i -pe 's/ANDROID_VERSION_CODE =(.*)$/ANDROID_VERSION_CODE = ${{github.run_number}}/g' buildSrc/src/main/java/Versions.kt
 
       - name: Build debug APK
-        run: ./gradlew assembleDevRelease
+        run: ./gradlew assembleRelease
 
       - name: Generate release notes
         id: generate-release-notes
