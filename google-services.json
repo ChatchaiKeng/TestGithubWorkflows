@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "759350558915",
+    "project_id": "testgithubworkflows",
+    "storage_bucket": "testgithubworkflows.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:759350558915:android:287245455be3b985dca276",
+        "android_client_info": {
+          "package_name": "com.plearn.testgithubworkflows"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcR0MSOSXtdamx8FIGKZz71RsvnzL3tr8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
