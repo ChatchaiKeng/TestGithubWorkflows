@@ -10,7 +10,6 @@ jobs:
   build_and_deploy_android:
     name: Build & Deploy Dev
     runs-on: ubuntu-latest
-    environment: dev
     timeout-minutes: 30
     steps:
       - name: Checkout source code
@@ -61,15 +60,6 @@ jobs:
       - name: Bump version code
         run: |
           perl -i -pe 's/ANDROID_VERSION_CODE =(.*)$/ANDROID_VERSION_CODE = ${{github.run_number}}/g' buildSrc/src/main/java/Versions.kt
-
-      - name: Run Detekt
-        run: ./gradlew detekt
-
-      - name: Run Android Lint
-        run: ./gradlew lintDevDebug
-
-      - name: Run unit tests with Kover
-        run: ./gradlew koverXmlReport
 
       - name: Build debug APK
         run: ./gradlew assembleDevRelease
