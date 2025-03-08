@@ -38,41 +38,47 @@ jobs:
         env:
           SIGNING_PROPERTIES: ${{ secrets.SIGNING_PROPERTIES }}
         run: |
-          echo -e $SIGNING_PROPERTIES >> signing.properties
+          echo -e "$SIGNING_PROPERTIES" >> signing.properties
 
       - name: Set up dev properties
         env:
           ENV_PROPERTIES: ${{ secrets.ENV_PROPERTIES }}
         run: |
-          echo -e $ENV_PROPERTIES > dev.properties
+          echo -e "$ENV_PROPERTIES" > dev.properties
 
       - name: Set up Google Services json
         env:
           FIREBASE_GOOGLE_SERVICES_JSON: ${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}
         run: |
-          echo $FIREBASE_GOOGLE_SERVICES_JSON > app/google-services.json
+          echo "$FIREBASE_GOOGLE_SERVICES_JSON" > app/google-services.json
+          # ตรวจสอบว่าไฟล์ถูกสร้างและมีเนื้อหาถูกต้อง
+          cat app/google-services.json
+          # ตรวจสอบ JSON syntax
+          python3 -m json.tool app/google-services.json || echo "Invalid JSON format in google-services.json"
 
       - name: Set up New Relic properties
         env:
           NEWRELIC_PROPERTIES: ${{ secrets.NEWRELIC_PROPERTIES }}
-        run: echo -e "$NEWRELIC_PROPERTIES" > app/newrelic.properties
+        run: |
+          echo -e "$NEWRELIC_PROPERTIES" > app/newrelic.properties
 
       - name: Bump version code
         run: |
           perl -i -pe 's/ANDROID_VERSION_CODE =(.*)$/ANDROID_VERSION_CODE = ${{github.run_number}}/g' buildSrc/src/main/java/Versions.kt
 
       - name: Build debug APK
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleRelease --stacktrace  # เพิ่ม --stacktrace เพื่อดู error
 
       - name: Generate release notes
         id: generate-release-notes
-        run: echo "RELEASE_NOTE_CONTENT=$(git log -1 | grep -o "\[.*")" >> $GITHUB_OUTPUT
+        run: |
+          echo "RELEASE_NOTE_CONTENT=$(git log -1 | grep -o "\[.*")" >> $GITHUB_OUTPUT
 
-      - name: Deploy Android Dev to Firebase
+      - name: Deploy Android to Firebase
         uses: wzieba/Firebase-Distribution-Github-Action@v1.5.0
         with:
           appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_DISTRIBUTION_CREDENTIAL_JSON }}
           groups: ${{ secrets.FIREBASE_DISTRIBUTION_TESTER_GROUPS }}
-          file: app/build/outputs/apk/dev/release/app-dev-release.apk
+          file: app/build/outputs/apk/release/app-release-unsigned.apk
           releaseNotes: ${{ steps.generate-release-notes.outputs.RELEASE_NOTE_CONTENT }}
